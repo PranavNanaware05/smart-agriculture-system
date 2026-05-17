@@ -1,0 +1,844 @@
+{
+  "info": {
+    "_postman_id": "sa-api-001",
+    "name": "Smart Agriculture API",
+    "description": "Smart Agriculture backend — all REST endpoints.\n\n**Setup:** Import this file + `Smart-Agriculture.local.postman_environment.json`. Select the environment.\n\n**JWT:** Run **Register** or **Login**; the test script saves `accessToken` to collection variables. Other requests use Bearer auth from the collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "farmerId",
+      "value": "1"
+    },
+    {
+      "key": "cropId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Authentication",
+      "item": [
+        {
+          "name": "Register (FARMER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.accessToken) pm.collectionVariables.set('accessToken', j.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Ravi Kumar\",\n  \"email\": \"ravi@example.com\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"+919876543210\",\n  \"role\": \"FARMER\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "description": "Public. When `app.security.allow-only-farmer-self-registration=true`, only **FARMER** is allowed."
+          },
+          "response": [
+            {
+              "name": "201 Created — sample",
+              "originalRequest": {},
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example\",\n  \"tokenType\": \"Bearer\",\n  \"expiresInMs\": 86400000\n}"
+            },
+            {
+              "name": "409 Conflict — email exists",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"timestamp\": \"2026-05-14T10:00:00Z\",\n  \"status\": 409,\n  \"error\": \"Conflict\",\n  \"message\": \"Email is already registered\",\n  \"path\": \"/api/v1/auth/register\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.accessToken) pm.collectionVariables.set('accessToken', j.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ravi@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/login"
+          },
+          "response": [
+            {
+              "name": "200 OK — sample",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example\",\n  \"tokenType\": \"Bearer\",\n  \"expiresInMs\": 86400000\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"timestamp\": \"2026-05-14T10:00:00Z\",\n  \"status\": 401,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Invalid credentials\",\n  \"path\": \"/api/v1/auth/login\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Users",
+      "item": [
+        {
+          "name": "Get current user (me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/users/me",
+            "description": "Requires `Authorization: Bearer {{accessToken}}` (collection auth)."
+          },
+          "response": [
+            {
+              "name": "200 OK — sample",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id\": 1,\n  \"fullName\": \"Ravi Kumar\",\n  \"email\": \"ravi@example.com\",\n  \"role\": \"FARMER\",\n  \"phoneNumber\": \"+919876543210\",\n  \"enabled\": true,\n  \"createdAt\": \"2026-05-14T10:00:00Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Farmers",
+      "item": [
+        {
+          "name": "Create farmer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": null,\n  \"farmerName\": \"Ravi Kumar\",\n  \"village\": \"Nelamangala\",\n  \"district\": \"Bangalore Rural\",\n  \"state\": \"Karnataka\",\n  \"landArea\": 12.5,\n  \"soilType\": \"Red loam\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/farmers",
+            "description": "**FARMER:** omit `userId` (uses current user). **ADMIN:** set `userId` to the target FARMER user id."
+          },
+          "response": [
+            {
+              "name": "201 Created — sample",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id\": 1,\n  \"userId\": 1,\n  \"farmerName\": \"Ravi Kumar\",\n  \"village\": \"Nelamangala\",\n  \"district\": \"Bangalore Rural\",\n  \"state\": \"Karnataka\",\n  \"landArea\": 12.5,\n  \"soilType\": \"Red loam\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List all farmers (ADMIN only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/farmers"
+          },
+          "response": [
+            {
+              "name": "200 OK — sample",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": 1,\n    \"userId\": 1,\n    \"farmerName\": \"Ravi Kumar\",\n    \"village\": \"Nelamangala\",\n    \"district\": \"Bangalore Rural\",\n    \"state\": \"Karnataka\",\n    \"landArea\": 12.5,\n    \"soilType\": \"Red loam\"\n  }\n]"
+            },
+            {
+              "name": "403 Forbidden (FARMER)",
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"timestamp\": \"2026-05-14T10:00:00Z\",\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Only administrators can list all farmers\",\n  \"path\": \"/api/v1/farmers\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get farmer by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/farmers/{{farmerId}}"
+          }
+        },
+        {
+          "name": "Update farmer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": null,\n  \"farmerName\": \"Ravi Kumar\",\n  \"village\": \"Nelamangala\",\n  \"district\": \"Bangalore Rural\",\n  \"state\": \"Karnataka\",\n  \"landArea\": 13,\n  \"soilType\": \"Red loam\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/farmers/{{farmerId}}"
+          }
+        },
+        {
+          "name": "Delete farmer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/farmers/{{farmerId}}"
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Crops",
+      "item": [
+        {
+          "name": "Add crop",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmerId\": 1,\n  \"cropName\": \"Tomato\",\n  \"cropType\": \"Vegetable\",\n  \"sowingDate\": \"2026-03-01\",\n  \"harvestingDate\": null,\n  \"cropStatus\": \"GROWING\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/crops"
+          },
+          "response": [
+            {
+              "name": "201 Created — sample",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id\": 1,\n  \"farmerId\": 1,\n  \"cropName\": \"Tomato\",\n  \"cropType\": \"Vegetable\",\n  \"sowingDate\": \"2026-03-01\",\n  \"harvestingDate\": null,\n  \"cropStatus\": \"GROWING\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List crops by farmer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/crops?farmerId={{farmerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "crops"
+              ],
+              "query": [
+                {
+                  "key": "farmerId",
+                  "value": "{{farmerId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get crop by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/crops/{{cropId}}"
+          }
+        },
+        {
+          "name": "Update crop",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmerId\": 1,\n  \"cropName\": \"Tomato\",\n  \"cropType\": \"Vegetable\",\n  \"sowingDate\": \"2026-03-01\",\n  \"harvestingDate\": \"2026-06-15\",\n  \"cropStatus\": \"READY_TO_HARVEST\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/crops/{{cropId}}"
+          }
+        },
+        {
+          "name": "Delete crop",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/crops/{{cropId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Sensor data",
+      "item": [
+        {
+          "name": "Add sensor data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmerId\": 1,\n  \"temperature\": 28.5,\n  \"humidity\": 62,\n  \"soilMoisture\": 35\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/sensor-data"
+          },
+          "response": [
+            {
+              "name": "201 Created — sample",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id\": 1,\n  \"farmerId\": 1,\n  \"temperature\": 28.5,\n  \"humidity\": 62,\n  \"soilMoisture\": 35,\n  \"recordedAt\": \"2026-05-14T10:15:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Latest sensor data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensor-data/latest?farmerId={{farmerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sensor-data",
+                "latest"
+              ],
+              "query": [
+                {
+                  "key": "farmerId",
+                  "value": "{{farmerId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "All sensor data for farmer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensor-data?farmerId={{farmerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sensor-data"
+              ],
+              "query": [
+                {
+                  "key": "farmerId",
+                  "value": "{{farmerId}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Irrigation",
+      "item": [
+        {
+          "name": "Start irrigation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"waterLevel\": 75\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/irrigation/farmers/{{farmerId}}/start",
+            "description": "Body optional. Empty `{}` or omit body allowed."
+          },
+          "response": [
+            {
+              "name": "201 Created — sample",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id\": 1,\n  \"farmerId\": 1,\n  \"irrigationStatus\": \"RUNNING\",\n  \"waterLevel\": 75,\n  \"motorState\": \"ON\",\n  \"irrigationDate\": \"2026-05-14T10:20:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Stop irrigation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"waterLevel\": 40\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/irrigation/farmers/{{farmerId}}/stop"
+          },
+          "response": [
+            {
+              "name": "201 Created — sample",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id\": 2,\n  \"farmerId\": 1,\n  \"irrigationStatus\": \"STOPPED\",\n  \"waterLevel\": 40,\n  \"motorState\": \"OFF\",\n  \"irrigationDate\": \"2026-05-14T10:25:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Irrigation history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/irrigation/farmers/{{farmerId}}/history"
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Weather (Open-Meteo)",
+      "item": [
+        {
+          "name": "Current weather",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/weather/current?latitude=12.97&longitude=77.59",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "weather",
+                "current"
+              ],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "12.97"
+                },
+                {
+                  "key": "longitude",
+                  "value": "77.59"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — sample",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"latitude\": 12.97,\n  \"longitude\": 77.59,\n  \"temperatureC\": 29.2,\n  \"humidityPercent\": 58.4,\n  \"summary\": \"Mainly clear / partly cloudy / overcast\",\n  \"fetchedAt\": \"2026-05-14T10:30:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Temperature only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/weather/temperature?latitude=12.97&longitude=77.59",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "weather",
+                "temperature"
+              ],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "12.97"
+                },
+                {
+                  "key": "longitude",
+                  "value": "77.59"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"temperatureC\": 29.2\n}"
+            }
+          ]
+        },
+        {
+          "name": "Humidity only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/weather/humidity?latitude=12.97&longitude=77.59",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "weather",
+                "humidity"
+              ],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "12.97"
+                },
+                {
+                  "key": "longitude",
+                  "value": "77.59"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"humidityPercent\": 58.4\n}"
+            }
+          ]
+        },
+        {
+          "name": "Temperature + humidity (metrics)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/weather/metrics?latitude=12.97&longitude=77.59",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "weather",
+                "metrics"
+              ],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "12.97"
+                },
+                {
+                  "key": "longitude",
+                  "value": "77.59"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"temperatureC\": 29.2,\n  \"humidityPercent\": 58.4\n}"
+            }
+          ]
+        },
+        {
+          "name": "Save weather snapshot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 12.97,\n  \"longitude\": 77.59,\n  \"farmerId\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/weather/save",
+            "description": "`farmerId` optional; when set, must be a farmer you may access."
+          },
+          "response": [
+            {
+              "name": "201 Created — sample",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id\": 1,\n  \"latitude\": 12.97,\n  \"longitude\": 77.59,\n  \"temperatureC\": 29.2,\n  \"humidityPercent\": 58.4,\n  \"summary\": \"Mainly clear / partly cloudy / overcast\",\n  \"farmerId\": 1,\n  \"fetchedAt\": \"2026-05-14T10:30:00Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 Notifications",
+      "item": [
+        {
+          "name": "Send notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmerId\": 1,\n  \"title\": \"Reminder\",\n  \"message\": \"Inspect drip lines in block A.\",\n  \"notificationType\": \"GENERAL\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/notifications/send"
+          },
+          "response": [
+            {
+              "name": "201 Created — sample",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id\": 1,\n  \"farmerId\": 1,\n  \"title\": \"Reminder\",\n  \"message\": \"Inspect drip lines in block A.\",\n  \"notificationType\": \"GENERAL\",\n  \"createdAt\": \"2026-05-14T10:35:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications?farmerId={{farmerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "farmerId",
+                  "value": "{{farmerId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Alert — low soil moisture",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmerId\": 1,\n  \"soilMoisture\": 18,\n  \"threshold\": 25\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/notifications/alerts/low-soil-moisture",
+            "description": "Creates a notification only when `soilMoisture` < `threshold`."
+          }
+        },
+        {
+          "name": "Alert — weather",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmerId\": 1,\n  \"message\": \"Heavy rain expected tomorrow evening.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/notifications/alerts/weather"
+          }
+        },
+        {
+          "name": "Alert — irrigation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmerId\": 1,\n  \"message\": \"Motor stopped unexpectedly. Check power supply.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/notifications/alerts/irrigation"
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Actuator (optional)",
+      "item": [
+        {
+          "name": "Health (no auth)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/actuator/health"
+          },
+          "response": [
+            {
+              "name": "200 OK — sample",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"UP\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

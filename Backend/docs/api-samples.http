@@ -1,0 +1,111 @@
+### Smart Agriculture API — sample requests (use with REST Client / Postman)
+### Base URL: http://localhost:8080
+
+### Register (FARMER only when app.security.allow-only-farmer-self-registration=true)
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Ravi Kumar",
+  "email": "ravi@example.com",
+  "password": "password123",
+  "phoneNumber": "+91 9876543210",
+  "role": "FARMER"
+}
+
+### Login
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "ravi@example.com",
+  "password": "password123"
+}
+
+### Create farmer (FARMER: omit userId; ADMIN: set userId)
+POST http://localhost:8080/api/v1/farmers
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "userId": null,
+  "farmerName": "Ravi Kumar",
+  "village": "Nelamangala",
+  "district": "Bangalore Rural",
+  "state": "Karnataka",
+  "landArea": 12.5,
+  "soilType": "Red loam"
+}
+
+### Add crop
+POST http://localhost:8080/api/v1/crops
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "farmerId": 1,
+  "cropName": "Tomato",
+  "cropType": "Vegetable",
+  "sowingDate": "2026-03-01",
+  "harvestingDate": null,
+  "cropStatus": "GROWING"
+}
+
+### Sensor data
+POST http://localhost:8080/api/v1/sensor-data
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "farmerId": 1,
+  "temperature": 28.5,
+  "humidity": 62.0,
+  "soilMoisture": 35.0
+}
+
+### Start irrigation (optional body)
+POST http://localhost:8080/api/v1/irrigation/farmers/1/start
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "waterLevel": 75.0
+}
+
+### Weather current (Open-Meteo)
+GET http://localhost:8080/api/v1/weather/current?latitude=12.97&longitude=77.59
+Authorization: Bearer {{token}}
+
+### Save weather snapshot
+POST http://localhost:8080/api/v1/weather/save
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "latitude": 12.97,
+  "longitude": 77.59,
+  "farmerId": 1
+}
+
+### Notification send
+POST http://localhost:8080/api/v1/notifications/send
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "farmerId": 1,
+  "title": "Reminder",
+  "message": "Inspect drip lines in block A.",
+  "notificationType": "GENERAL"
+}
+
+### Low soil moisture alert
+POST http://localhost:8080/api/v1/notifications/alerts/low-soil-moisture
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "farmerId": 1,
+  "soilMoisture": 18.0,
+  "threshold": 25.0
+}
